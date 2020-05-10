@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataProtectionLab2Client", "DataProtectionLab2Client\DataProtectionLab2Client.csproj", "{DEEAC8E9-58F3-49B1-A65D-645D66C28AF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DEEAC8E9-58F3-49B1-A65D-645D66C28AF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEEAC8E9-58F3-49B1-A65D-645D66C28AF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEEAC8E9-58F3-49B1-A65D-645D66C28AF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEEAC8E9-58F3-49B1-A65D-645D66C28AF9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1FFF5C61-23AA-4E26-805B-F4C3A8703D32}
+	EndGlobalSection
+EndGlobal
