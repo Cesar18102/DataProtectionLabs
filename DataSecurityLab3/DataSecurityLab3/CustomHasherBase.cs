@@ -5,11 +5,13 @@ namespace DataSecurityLab3
 {
     public class CustomHasherBase : HashAlgorithm
     {
+        public int Size { get; private set; }
         private new byte[] Hash { get; set; }
 
         public CustomHasherBase(int size)
         {
             Hash = new byte[size];
+            Size = size;
             Initialize();
         }
 
@@ -23,7 +25,7 @@ namespace DataSecurityLab3
             for (int i = 0; i < cbSize; ++i)
             {
                 int mod = array[i + ibStart] % Hash.Length + 1;
-                for (int j = i % Hash.Length; j < Hash.Length; j += mod)
+                for (int j = 0; j < Hash.Length; j += mod)
                     Hash[j] += array[i + ibStart];
             }
         }

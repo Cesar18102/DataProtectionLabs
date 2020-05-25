@@ -112,7 +112,7 @@ namespace DataSecurityLab3
                 return File.OpenRead(dialog.FileName);
         }
 
-        private static IEnumerable<byte[]> GetFileHashes(string fileTypeName, string dir, params string[] extensions)
+        private static byte[] SelectOpenAndReadFile(string fileTypeName, string dir, params string[] extensions)
         {
             FileStream fs = SelectAndOpenFile(fileTypeName, dir, true, extensions);
 
@@ -121,7 +121,13 @@ namespace DataSecurityLab3
 
             fs.Close();
 
-            return GetHashes(buffer, hasher2, hasher4, hasher8);
+            return buffer;
+        }
+
+        private static IEnumerable<byte[]> GetFileHashes(string fileTypeName, string dir, params string[] extensions)
+        {
+            byte[] bytes = SelectOpenAndReadFile(fileTypeName, dir, extensions);
+            return GetHashes(bytes, hasher2, hasher4, hasher8);
         }
 
         private static void TestFiles()
@@ -159,43 +165,75 @@ namespace DataSecurityLab3
             return result;
         }
 
-        public static void TestBruteForce()
+        public static byte[] GetCollision(byte[] source, CustomHasherBase hasher)
         {
-            Console.Write("Input a string to find hash collision for it: ");
-            string input = Console.ReadLine();
+            byte[] collision = new byte[source.Length];
+            Array.Copy(source, collision, source.Length);
 
-            List<CustomHasherBase> hashers = new List<CustomHasherBase>() { hasher2, hasher4, hasher8 };
-            List<byte[]> hashes = GetHashes(input, hashers.ToArray()).ToList();
+            Dictionary<byte, int> counter = new Dictionary<byte, int>();
 
-            for (int i = 0; i < hashes.Count; ++i)
+            for (int i = 0; i < collision.Length; ++i)
             {
-                bool found = false;
-                ulong upperBound = (ulong)Math.Pow(256, hashes[i].Length);
-                for(ulong j = 0; j < upperBound; ++j)
-                {
-                    byte[] test = BitConverter.GetBytes(j);
-                    int diff = GetDiffBytesCount(test, hashes[i]);
+                byte key = (byte)(collision[i] % hasher.Size + 1);
 
-                    if (diff == 0)
-                    {
-                        found = true;
-                        Console.WriteLine("Collision found: " + input + " and " + Encoding.UTF7.GetString(test));
-                        break;
-                    }
-                }
+                if (!counter.ContainsKey(key))
+                    counter.Add(key, 0);
 
-                if (!found)
-                    Console.WriteLine("Collisions not found");
+                ++counter[key];
             }
+
+            foreach (byte key in counter.Keys.ToList())
+                if (counter[key] % 2 != 0)
+                    --counter[key];
+
+            for (int i = 0; i < collision.Length; ++i)
+            {
+                byte key = (byte)(collision[i] % hasher.Size + 1);
+
+                if (counter[key] == 0)
+                    continue;
+
+                if (counter[key] % 2 == 0)
+                    collision[i] += (byte)(hasher.Size);
+                else
+                    collision[i] -= (byte)(hasher.Size);
+                --counter[key];
+            }
+
+            return collision;
+        }
+
+        public static void TestCollision(byte[] source, params CustomHasherBase[] hashers)
+        {
+            foreach(CustomHasherBase hasher in hashers)
+            {
+                byte[] collision = GetCollision(source, hasher);
+
+                string sourceText = Encoding.UTF8.GetString(source);
+                string collisionText = Encoding.UTF8.GetString(collision);
+
+                byte[] sourceHash = hasher.ComputeHash(source);
+                byte[] collisionHash = hasher.ComputeHash(collision);
+
+                Console.WriteLine($"Source text: {sourceText};\nHash={BitConverter.ToString(sourceHash)}\n");
+                Console.WriteLine($"Collision text: {collisionText};\nHash={BitConverter.ToString(collisionHash)}\n");
+            }
+        }
+
+        public static void TestCollisions()
+        {
+            Console.WriteLine("\nSelect a file to find collision for");
+            byte[] bytes = SelectOpenAndReadFile("Any file", Environment.CurrentDirectory + "\\tests", "*");
+            TestCollision(bytes, hasher2, hasher4, hasher8);
         }
 
         [STAThread]
         public static void Main(string[] args)
         {
-            //TestWords();
-            //TestFiles();
-            //TestFiles();
-            TestBruteForce();
+            TestWords();
+            TestFiles();
+            TestFiles();
+            TestCollisions();
 
             Console.ReadLine();
         }
