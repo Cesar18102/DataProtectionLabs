@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 using System.Collections.Generic;
 
 namespace DiffieHellmann
@@ -46,13 +47,13 @@ namespace DiffieHellmann
             {
                 bool found = true;
                 for (int j = 1; j < prime - 1; ++j)
-                    if (Math.Pow(i, j) % prime == 1)
+                    if (BigInteger.ModPow(i, j, prime).IsOne)
                     {
                         found = false;
                         break;
                     }
 
-                if (found && Math.Pow(i, prime - 1) % prime == 1)
+                if (found && BigInteger.ModPow(i, prime - 1, prime).IsOne)
                     squares.Add(i);
             }
 
@@ -78,7 +79,7 @@ namespace DiffieHellmann
         public (int publ, int priv) GetKeys(int p, int g)
         {
             int priv = Rand.Next(0, p);
-            int publ = (int)Math.Pow(g, priv) % p;
+            int publ = (int)BigInteger.ModPow(g, priv, p);
             return (publ, priv);
         }
 
@@ -87,7 +88,7 @@ namespace DiffieHellmann
         /// </summary>
         public int GetCommonPrivateKey(int publicKeyOther, int privateKeyOwn, int p)
         {
-            return (int)Math.Pow(publicKeyOther, privateKeyOwn) % p;
+            return (int)BigInteger.ModPow(publicKeyOther, privateKeyOwn, p);
         }
     }
 }

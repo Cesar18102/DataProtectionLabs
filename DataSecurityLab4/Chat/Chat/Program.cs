@@ -218,13 +218,13 @@ namespace Chat
             {
                 if(encodedMessage.EncodedText == "******")
                 {
-                    messages.Add(new DecodedMessage(encodedMessage.EncodedText, encodedMessage.Sender.Name, encodedMessage.TimeSpan));
+                    messages.Add(new DecodedMessage(encodedMessage.EncodedText, encodedMessage.Sender.Name, encodedMessage.TimeSpan, null));
                     continue;
                 }
 
                 int commonKey = DIFFIE.GetCommonPrivateKey(encodedMessage.Sender.PublicKey, keys.PrivateKey, keys.Chat.P);
                 string decodedMessage = NOTEPAD.GetCodeText(NOTEPAD.Decode(encodedMessage.EncodedText, commonKey));
-                messages.Add(new DecodedMessage(decodedMessage, encodedMessage.Sender.Name, encodedMessage.TimeSpan));
+                messages.Add(new DecodedMessage(decodedMessage, encodedMessage.Sender.Name, encodedMessage.TimeSpan, commonKey));
             }
 
             return messages;
@@ -238,6 +238,7 @@ namespace Chat
             foreach (MemberDto member in chat.Members)
             {
                 int commonKey = DIFFIE.GetCommonPrivateKey(member.PublicKey, keys.PrivateKey, keys.Chat.P);
+                Console.WriteLine($"***Encoded for {member.Name} with key {commonKey}***");
                 string encodedMessage = NOTEPAD.Encode(message, commonKey);
                 encodedMessages.Add(new EncodedMessageDto(encodedMessage, member.Name));
             }
@@ -254,7 +255,10 @@ namespace Chat
             else
             {
                 foreach (DecodedMessage message in messages)
-                    Console.WriteLine($"{message.Sender}: {message.Text}, at {message.TimeSpan.ToShortTimeString()}");
+                    Console.WriteLine(
+                        $"{message.Sender}: {message.Text}, at {message.TimeSpan.ToShortTimeString()}" + 
+                        (message.CommonKey == null ? "" : $" with common key {message.CommonKey}")
+                    );
                 Console.WriteLine();
             }
         }
