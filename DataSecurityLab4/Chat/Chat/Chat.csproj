@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B41B576C-7866-4E98-A80D-6937DF50715F}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Chat</RootNamespace>
+    <AssemblyName>Chat</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ChatClient.cs" />
+    <Compile Include="Connector.cs" />
+    <Compile Include="Dto\Input\ChatDto.cs" />
+    <Compile Include="Dto\Input\ChatInfoDto.cs" />
+    <Compile Include="Dto\Input\Exceptions\ConflictException.cs" />
+    <Compile Include="Dto\Input\Exceptions\CustomException.cs" />
+    <Compile Include="Dto\Input\Exceptions\NotFoundException.cs" />
+    <Compile Include="Dto\Input\Exceptions\ValidationException.cs" />
+    <Compile Include="Dto\Input\MemberDto.cs" />
+    <Compile Include="Dto\Input\MessageDto.cs" />
+    <Compile Include="Dto\Output\CreateChatDto.cs" />
+    <Compile Include="Dto\Output\EncodedMessageDto.cs" />
+    <Compile Include="Dto\Output\JoinChatDto.cs" />
+    <Compile Include="Dto\Output\WriteMessageDto.cs" />
+    <Compile Include="Models\DecodedMessage.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DataSecurityPractice2\DataSecurityPractice2\DataSecurityPractice2.csproj">
+      <Project>{b6aadc76-a4f9-4972-aa17-0d196356b95f}</Project>
+      <Name>DataSecurityPractice2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DiffieHellman\DiffieHellman\DiffieHellman.csproj">
+      <Project>{abaea75e-fdcf-4128-a60d-3f0dbff058d1}</Project>
+      <Name>DiffieHellman</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
