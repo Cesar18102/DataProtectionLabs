@@ -2,6 +2,8 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Reflection;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 
 using PemUtils;
@@ -9,11 +11,14 @@ using Newtonsoft.Json;
 
 namespace DataProtectionLab2Client
 {
+    [AttributeUsage(AttributeTargets.Property)]
+    public class EncryptedAttribute : Attribute { }
+
     public class Program
     {
-        private const string SERVER_SIGN_UP_URL = "http://localhost:8080/security_labs/registration_controller.php";
-        private const string SERVER_PUBLIC_KEY_URL = "http://localhost:8080/security_labs/keys/public.pem";
-        private const string URL_ENCODED_FROM_TYPE = "application/x-www-form-urlencoded";
+        private const string SERVER_SIGN_UP_URL = "http://109.86.209.135:8080/security_labs/registration_controller.php";
+        private const string SERVER_PUBLIC_KEY_URL = "http://109.86.209.135:8080/security_labs/keys/public.pem";
+        private const string JSON_FROM_TYPE = "application/json";
 
         private static RSACryptoServiceProvider Rsa = new RSACryptoServiceProvider();
 
@@ -22,6 +27,7 @@ namespace DataProtectionLab2Client
             [JsonProperty("login")]
             public string Login { get; private set; }
 
+            [Encrypted]
             [JsonProperty("password")]
             public string Password { get; private set; }
 
@@ -75,29 +81,52 @@ namespace DataProtectionLab2Client
             string password = Console.ReadLine();
 
             Credentials credentials = new Credentials(login, password);
-            byte[] credsEncrypted = Encrypt(credentials);
+            object encrypted = Encrypt<Credentials>(credentials);
+            string encryptedJson = JsonConvert.SerializeObject(encrypted);
 
-            SignUpResponseDto result = SendSignUp(credsEncrypted);
-
+            SignUpResponseDto result = SendSignUp(encryptedJson);
             Console.WriteLine(result.Status + ": " + result.Message);
         }
 
-        public static byte[] Encrypt(Credentials credentials)
+        public static Dictionary<string, object> Encrypt<T>(T obj) => Encrypt(typeof(T), obj);
+        public static Dictionary<string, object> Encrypt(Type type, object obj)
         {
-            string credsJson = JsonConvert.SerializeObject(credentials);
-            byte[] credsBytes = Encoding.UTF8.GetBytes(credsJson);
-            return Rsa.Encrypt(credsBytes, RSAEncryptionPadding.Pkcs1);
+            PropertyInfo[] properties = type.GetProperties();
+            Dictionary<string, object> result = new Dictionary<string, object>();
+
+            foreach (PropertyInfo property in properties)
+            {
+                JsonPropertyAttribute jsonAttr = property.GetCustomAttribute<JsonPropertyAttribute>();
+                string name = jsonAttr == null ? property.Name : jsonAttr.PropertyName;
+                object value = property.GetValue(obj);
+
+                if (property.PropertyType.IsPrimitive || property.PropertyType.Equals(typeof(string)))
+                {
+                    if (property.GetCustomAttribute<EncryptedAttribute>() != null)
+                    {
+                        byte[] bytes = Encoding.UTF8.GetBytes(value.ToString());
+                        byte[] encrypted = Rsa.Encrypt(bytes, RSAEncryptionPadding.Pkcs1);
+                        string base64 = Convert.ToBase64String(encrypted);
+                        result.Add(name, base64);
+                    }
+                    else
+                        result.Add(name, value);
+                }
+                else
+                    result.Add(name, Encrypt(property.PropertyType, property.GetValue(obj)));
+            }
+
+            return result;
         }
 
-        public static SignUpResponseDto SendSignUp(byte[] credsEncrypted)
+        public static SignUpResponseDto SendSignUp(string signUpData)
         {
             HttpWebRequest request = HttpWebRequest.CreateHttp(SERVER_SIGN_UP_URL);
             request.Method = WebRequestMethods.Http.Post;
-            request.ContentType = URL_ENCODED_FROM_TYPE;
-            request.ContentLength = credsEncrypted.Length;
+            request.ContentType = JSON_FROM_TYPE;
 
-            using (Stream str = request.GetRequestStream())
-                str.Write(credsEncrypted, 0, credsEncrypted.Length);
+            using (StreamWriter strw = new StreamWriter(request.GetRequestStream()))
+                strw.WriteLine($"{signUpData}");
 
             try
             {
@@ -109,6 +138,9 @@ namespace DataProtectionLab2Client
             }
             catch(WebException ex)
             {
+                if (ex.Response == null)
+                    return new SignUpResponseDto("failed", ex.Message);
+
                 using (StreamReader str = new StreamReader(ex.Response?.GetResponseStream()))
                 {
                     string errorResponseJson = str?.ReadToEnd();

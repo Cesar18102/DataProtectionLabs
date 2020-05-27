@@ -29,32 +29,39 @@ RYCoVgVVhto1f8NgwO9XF2RwaqW4xI6+sh5i6KcZffKvXBYU8Y+x
 -----END RSA PRIVATE KEY-----
 ";
 
-	$credsEncrypted = file_get_contents("php://input");
+	$data = file_get_contents('php://input');
+	$json = json_decode($data, true);
+
+
+	if(!isset($json["login"])) {
+		http_response_code(400);
+		echo "{ \"status\" : \"fail\", \"message\" : \"login is required\" }";
+		return;
+	}
+	
+	if(!isset($json["password"])) {
+		http_response_code(400);
+		echo "{ \"status\" : \"fail\", \"message\" : \"password is required\" }";
+		return;
+	}
+
+	$login = $json["login"];
+	$passwordEncrypted = base64_decode($json["password"]);
 	$privateKey = openssl_get_privatekey($privateKeyData);
 
-	if(!openssl_private_decrypt($credsEncrypted, $creds, $privateKey)) {
+	if(!openssl_private_decrypt($passwordEncrypted, $passwordDecrypted, $privateKey)) {
+		http_response_code(400);
 		echo "{ \"status\" : \"fail\", \"message\" : \"decryption failed\" }";
-		exit();
+		return;
 	}
 	
-	$json = json_decode($creds, true);
-	
-	if(!isset($json["login"]) || !isset($json["password"])) {
+	if(!preg_match("/^[A-Za-z0-9_]{8,20}$/", $passwordDecrypted)) {
 		http_response_code(400);
-		echo "{ \"status\" : \"fail\", \"message\" : \"invalid request\" }";
-		exit();
+		echo "{ \"status\" : \"fail\", \"message\" : \"invalid password\", \"data\" : \"$passwordDecrypted\" }";
+		return;
 	}
 	
-	$login = $json["login"];
-	$password = $json["password"];
-	
-	if(!preg_match("/^[A-Za-z0-9_]{8,20}$/", $password)) {
-		http_response_code(400);
-		echo "{ \"status\" : \"fail\", \"message\" : \"invalid password\" }";
-		exit();
-	}
-	
-	$password = md5($password);
+	$password = md5($passwordDecrypted);
 	
 	$db = mysqli_connect("localhost", "root", "", "rsa_test");
 	mysqli_query($db, "INSERT INTO accounts VALUES(0, \"$login\", \"$password\");");
