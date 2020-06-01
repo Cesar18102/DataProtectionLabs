@@ -16,7 +16,7 @@ namespace Chat
 {
     public class Program
     {
-        private static readonly ChatClient CHAT_CLIENT = new ChatClient("http://localhost:5000/api/");
+        private static readonly ChatClient CHAT_CLIENT = new ChatClient("http://109.86.209.135:5000/api/");
         private static readonly DH.DiffieHellmann DIFFIE = new DH.DiffieHellmann();
         private static readonly DisposableNotepad NOTEPAD = new DisposableNotepad();
 
