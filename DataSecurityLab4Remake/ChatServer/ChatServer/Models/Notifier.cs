@@ -24,7 +24,7 @@ namespace ChatServer.Models
 
         public void Send(SocketActionBase action)
         {
-            if (Sender == null || !Sender.Connected)
+            //if (Sender == null || !Sender.Connected)
             {
                 Sender = new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 Sender.Connect(Endpoint);

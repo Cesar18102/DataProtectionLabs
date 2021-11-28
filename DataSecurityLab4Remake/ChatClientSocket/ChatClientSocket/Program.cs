@@ -23,7 +23,7 @@ namespace ChatClientSocket
     public class Program
     {
         private static Listener LISTENER { get; set; }
-        private static readonly ChatClient CHAT_CLIENT = new ChatClient("http://localhost:5000/api/");
+        private static readonly ChatClient CHAT_CLIENT = new ChatClient("http://192.168.0.108:5000/api/");
 
         private static readonly DiffieHellmann DIFFIE = new DiffieHellmann();
         private static readonly DisposableNotepad NOTEPAD = new DisposableNotepad();
